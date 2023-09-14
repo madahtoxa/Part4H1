@@ -1,0 +1,66 @@
+package com.example.avatar.service;
+
+
+import com.example.avatar.model.Faculty;
+import com.example.avatar.Exception.FacultyNotFoundException;
+import com.example.avatar.Exception.DataNotFoundedException;
+import com.example.avatar.repository.FacultyRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+
+@Service
+public class FacultyService {
+    private final FacultyRepository facultyRepository;
+
+    public FacultyService(FacultyRepository facultyRepository) {
+        this.facultyRepository = facultyRepository;
+    }
+
+    public Faculty getById(Long id) {
+        return facultyRepository.findById(id).orElseThrow(DataNotFoundedException::new);
+    }
+
+    public Collection<Faculty> getAll() {
+        return facultyRepository.findAll();
+    }
+
+    public Faculty create(Faculty faculty) {
+        facultyRepository.save(faculty);
+        return faculty;
+    }
+
+    public Faculty update(Long id, Faculty faculty) {
+        if (facultyRepository.existsById(id)) {
+            facultyRepository.findById(id)
+                    .ifPresent(f -> {
+                        f.setName(faculty.getName());
+                        f.setColor(faculty.getColor());
+                        facultyRepository.save(f);
+                    });
+            return faculty;
+        }
+        throw new DataNotFoundedException();
+    }
+
+
+    public Faculty delete(Long id) {
+        Faculty faculty = facultyRepository.findById(id)
+                .orElseThrow(DataNotFoundedException::new);
+        facultyRepository.delete(faculty);
+        return faculty;
+    }
+
+    public Collection<Faculty> getByColor(String color) {
+        return facultyRepository.findAllByColor(color);
+    }
+
+    public Collection<Faculty> getByColorOrName(String color, String name) {
+        return facultyRepository.findAllByColorIgnoreCaseOrNameIgnoreCase(color, name);
+    }
+
+    public Faculty getByStudentId(Long studentId) {
+        return facultyRepository.findByStudentId(studentId).orElseThrow(FacultyNotFoundException::new);
+    }
+}
+
